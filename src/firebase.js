@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes } from "firebase/storage";
 
 // TODO: Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
@@ -17,13 +17,4 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-export {
-  db,
-  storage,
-  getDownloadURL,
-  ref,
-  uploadBytes,
-  getAuth,
-  signOut,
-  getFirestore,
-};
+export { db, storage, ref, uploadBytes, getAuth, signOut, getFirestore };

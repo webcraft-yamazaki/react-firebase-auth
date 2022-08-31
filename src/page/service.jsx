@@ -2,7 +2,7 @@ import { useState, useEffect, memo, useCallback } from 'react'
 //ルーティング用react-route関数
 import { Navigate, useNavigate } from "react-router-dom";
 //firebase通信用関数
-import { getAuth, signOut, db, storage, ref, uploadBytes, getDownloadURL } from '../firebase';
+import { getAuth, signOut, db, storage, ref, uploadBytes } from '../firebase';
 //ログイン用firebase関数
 import { onAuthStateChanged } from 'firebase/auth';
 //投稿用firebase関数
@@ -23,9 +23,6 @@ const Service = memo(() => {
   const [tweetMessage, setTweetMessage] = useState("");
   const [urls, setUrls] = useState([]);
   const [tweetImage, setTweetImage] = useState([]);
-
-  const [dataImgName, setDataImgName] = useState([]);
-  const [dataImgPath, setDataImgPath] = useState([]);
 
   //ログアウト
   const handleSubmit = (event) => {
