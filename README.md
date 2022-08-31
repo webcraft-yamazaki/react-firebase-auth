@@ -16,3 +16,17 @@
 ### 記事投稿まわり
 
 - firebase ドキュメント ID 取得方法 https://www.azukipan.com/posts/firebase-firestore-database-onsnapshot/
+
+### 画像投稿まわり
+
+- firebase ドキュメント ID 取得方法 https://neko-note.org/react-dropzone/830
+- Firebase バージョン 9 で Storage を使って画像をアップロードする(React) https://qiita.com/hide8800kasu/items/e2c8c9d2945e9ee93398
+
+### google storage ルール書き方
+
+- Firebase Cloud Storage のセキュリティルール書き方一覧 https://qiita.com/ryo2132/items/8d33524fe24a589089a2
+- CloudFirestore のセキュリティルールの記法とその意味 https://atsu-developer.net/276/
+
+### 非同期制御 プロミスの説明
+
+- Promise コンストラクタと Executor 関数 https://zenn.dev/estra/books/js-async-promise-chain-event-loop/viewer/3-epasync-promise-constructor-executor-func

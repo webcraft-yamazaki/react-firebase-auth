@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, memo } from 'react'
 import { db } from "../firebase";
 import { collection, getDocs, onSnapshot, orderBy, query } from "firebase/firestore";
 
-function Timeline() {
+const Timeline = memo(() => {
   const [posts, setPosts] = useState([]);
   // const [postID, setPostID] = useState([]);
 
@@ -38,6 +38,6 @@ function Timeline() {
       </ul>
     </div>
   )
-}
+})
 
 export default Timeline
