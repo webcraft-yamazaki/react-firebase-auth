@@ -2,7 +2,7 @@ import { useState, useEffect, memo, useCallback } from 'react'
 //ルーティング用react-route関数
 import { Navigate, useNavigate } from "react-router-dom";
 //firebase通信用関数
-import { getAuth, signOut, db, storage, ref, uploadBytes } from '../firebase';
+import { getAuth, signOut, db, storage, ref, uploadBytes, uploadBytesResumable, getDownloadURL } from '../firebase';
 //ログイン用firebase関数
 import { onAuthStateChanged } from 'firebase/auth';
 //投稿用firebase関数
@@ -11,8 +11,6 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 //コンポーネント
 import Timeline from '../components/Timeline';
 import MyDropzone from '../components/MyDropzone';
-
-
 
 const Service = memo(() => {
 
@@ -35,76 +33,95 @@ const Service = memo(() => {
     });
   };
 
+  const uploadFunc = (imgs) => {
+    let Count = 0;
+    const postImg = {
+      name: [],
+      fullPath: [],
+      url: [],
+    };
+    Object.keys(imgs).forEach((key) => {
+      const storageRef = ref(storage, `images/${imgs[key].name}`);
+      const uploadTask = uploadBytesResumable(storageRef, imgs[key]);
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          // Observe state change events such as progress, pause, and resume
+          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload is ' + progress + '% done');
+          switch (snapshot.state) {
+            case 'paused':
+              console.log('Upload is paused');
+              break;
+            case 'running':
+              console.log('Upload is running');
+              break;
+          }
+        },
+        (error) => {
+          // Handle unsuccessful uploads
+        },
+        () => {
+          // Handle successful uploads on complete
+          // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            Count++;
+            console.log('File available at', downloadURL);
+            postImg.name[key] = uploadTask.snapshot.metadata.name;
+            postImg.fullPath[key] = uploadTask.snapshot.metadata.fullPath;
+            postImg.url[key] = downloadURL;
+            if (imgs.length == Count) {
+              tweetSubmit(postImg);
+            }
+          });
+        }
+      );
+    })
+  }
+
+  const tweetSubmit = (imgs) => {
+    let post_map = {
+      user_id: user.uid,
+      text: tweetMessage,
+      timestamp: serverTimestamp(),
+    }
+    if (imgs != undefined) {
+      const img_map = {
+        postImgs: {
+          name: imgs.name,
+          fullPath: imgs.fullPath,
+          url: imgs.url,
+        }
+      }
+      post_map = Object.assign(post_map, img_map);
+    }
+    //firebaseのデータベースにデータを追加する
+    addDoc(collection(db, "post"), post_map)
+    setTweetMessage("");
+
+  }
+
   const sendTweet = (e, imgs) => {
     e.preventDefault();
-    new Promise((resolve, reject) => {
-      console.log('最初に実行');
-      let imgName = [];
-      let imgPath = [];
-      if (imgs.length) {
-        Object.keys(imgs).forEach((key) => {
-          const storageRef = ref(storage, `images/${imgs[key].name}`);
-          // 'file' comes from the Blob or File API
-          uploadBytes(storageRef, imgs[key])
-            .then((snapshot) => {
-              console.log(imgs[key].name + "のアップロードが成功しました");
-              imgName.push(snapshot.metadata.name);
-              imgPath.push(snapshot.metadata.fullPath);
-              resolve([imgName, imgPath]);
-            })
-            .catch((error) => {
-              console.log(imgs[key].name + "のアップロードが失敗しました");
-              if (key === 0) {
-                alert("画像のアップロードが失敗しました");
-              } else {
-                alert(`${key}枚目以降の画像のアップロードが失敗しました`);
-              }
-              resolve([imgName, imgPath]);
-            });
-        })
-      } else {
-        resolve();
-      }
-    })
-      .then((resolve) => { //resolveの引数１を受けとる
-        //firebaseのデータベースにデータを追加する
-        addDoc(collection(db, "post"), {
-          user_id: user.uid,
-          text: tweetMessage,
-          imgName: resolve[0],
-          imgPath: resolve[1],
-          timestamp: serverTimestamp(),
-        })
-        setTweetMessage("");
-      })
-      .catch((error) => {
-        //firebaseのデータベースにデータを追加する
-        addDoc(collection(db, "post"), {
-          user_id: user.uid,
-          text: tweetMessage,
-          imgName: [],
-          imgPath: [],
-          timestamp: serverTimestamp(),
-        })
-        setTweetMessage("");
-      })
+    if (imgs.length) {
+      uploadFunc(imgs);
+      onDrop("")
+    } else {
+      tweetSubmit();
+    }
   }
 
   //MyDropzone内で使用
-  const onDrop = (acceptedFiles) => {
-    // console.log(acceptedFiles)
+  const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles) {
       setUrls(acceptedFiles.map(acceptedFile => URL.createObjectURL(acceptedFile)));
       setTweetImage(acceptedFiles);
+    } else {
+      setUrls([]);
+      setTweetImage([]);
     }
-  }
-
-  const handleChangeImage = (e) => {
-    if (e.target.files[0]) {
-      // const randomId = Math.random().toString(32).substring(2);
-
-    }
-  };
+  }, [tweetImage])
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -134,7 +151,7 @@ const Service = memo(() => {
                 <button onClick={handleSubmit}>ログアウト</button><br />
                 <hr />
                 <textarea name="post" id="" cols="100" rows="10" value={tweetMessage} onChange={(e) => setTweetMessage(e.target.value)}></textarea><br />
-                <MyDropzone onDrop={onDrop} /><br />
+                <MyDropzone tweetImage={tweetImage} onDrop={onDrop} /><br />
                 <button className='tweetButton' type='submit' onClick={(e) => sendTweet(e, tweetImage)}>ツイートする</button>
                 <hr />
                 <Timeline />

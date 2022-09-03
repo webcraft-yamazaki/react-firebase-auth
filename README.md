@@ -16,6 +16,7 @@
 ### 記事投稿まわり
 
 - firebase ドキュメント ID 取得方法 https://www.azukipan.com/posts/firebase-firestore-database-onsnapshot/
+- if 文 https://qiita.com/horiy0125/items/fa07f5baa6028b9746ce
 
 ### 画像投稿まわり
 
@@ -30,3 +31,8 @@
 ### 非同期制御 プロミスの説明
 
 - Promise コンストラクタと Executor 関数 https://zenn.dev/estra/books/js-async-promise-chain-event-loop/viewer/3-epasync-promise-constructor-executor-func
+
+### CSS まわり
+
+- Emotion 書き方 https://qiita.com/nemutas/items/dac73aa645f27cde92cd
+- vscode ハイライトプラグイン https://www.atnr.net/how-to-highlight-css-in-js-code-on-vscode/
